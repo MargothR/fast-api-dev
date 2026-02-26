@@ -7,7 +7,7 @@ describe(`Suite de Pruebas de Calidad de Software`, () => {
   describe(`Pruebas Unitarias - Logica de Inventario`, () => {
     test(`Debe calcular correctamente el valor total (10 * 5 = 50)`, () => {
       const result = calculateValue(10, 5)
-      expect(result).toBe(50)
+      expect(result).toBe(99)
     })
 
     test(`Debe retornar 0 si se ingresan valores negativos`, () => {
