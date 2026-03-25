@@ -38,8 +38,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-  # ─── ETAPA 2: Prueba de Rendimiento con K6 ────────────────────────
+# ─── ETAPA 2: Prueba de Rendimiento con K6 ────────────────────────
   k6-load-test:
     name: K6 Performance Test
     runs-on: ubuntu-latest
@@ -56,6 +55,14 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Install K6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
       - name: Start app in background
         run: |
           npm start &
@@ -64,9 +71,8 @@ jobs:
           PORT: 3000
 
       - name: Run K6 load test
-        uses: grafana/k6-action@v0.3.1
-        with:
-          filename: k6/load-test.js
+        run: k6 run k6/load-test.js
+
 
   # ─── ETAPA 3: Build y Push a GHCR ─────────────────────────────────
   build-and-push:
