@@ -38,7 +38,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-# ─── ETAPA 2: Prueba de Rendimiento con K6 ────────────────────────
+
+  # ─── ETAPA 2: Prueba de Rendimiento con K6 ────────────────────────
   k6-load-test:
     name: K6 Performance Test
     runs-on: ubuntu-latest
@@ -71,8 +72,7 @@ jobs:
           PORT: 3000
 
       - name: Run K6 load test
-        run: k6 run k6/load-test.js
-
+        run: k6 run ./k6/load-test.js
 
   # ─── ETAPA 3: Build y Push a GHCR ─────────────────────────────────
   build-and-push:
