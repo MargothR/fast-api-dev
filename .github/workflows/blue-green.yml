@@ -108,4 +108,4 @@ jobs:
             cat $HOME/app/current_deploy.env
             echo "==> Contenedores:"
             docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-            curl -sf http://localhost/health && echo "OK produccion activa"
+            curl -sf http://localhost/ && echo "OK produccion activa"
