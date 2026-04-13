@@ -6,11 +6,12 @@ STATE_FILE="$PROJECT_DIR/current_deploy.env"
 
 echo "==> Desplegando color: $TARGET_COLOR en puerto $ACTIVE_PORT"
 
+export IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
+export IMAGE_TAG=$IMAGE_TAG
+
 docker pull ghcr.io/${IMAGE_NAME}:${IMAGE_TAG}
 
 cd $PROJECT_DIR
-export IMAGE_TAG=$IMAGE_TAG
-export IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
 
 docker compose -f docker-compose.${TARGET_COLOR}.yml up -d --force-recreate
 
