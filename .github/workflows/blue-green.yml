@@ -9,7 +9,7 @@ permissions:
   packages: write
 
 env:
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: margothr/fast-api-dev
 
 jobs:
   build-and-push:
