@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  app-green:
+    image: ghcr.io/${IMAGE_NAME}:${IMAGE_TAG}
+    container_name: app-green
+    ports:
+      - "3002:3000"
+    restart: unless-stopped

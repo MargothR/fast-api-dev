@@ -1,0 +1,107 @@
+name: Blue-Green CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+
+env:
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login a GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Metadatos imagen
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: type=sha,prefix=
+
+      - name: Build y Push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+
+  deploy-blue-green:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determinar color objetivo
+        id: target
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            STATE_FILE="$HOME/app/current_deploy.env"
+            if [ -f "$STATE_FILE" ]; then
+              CURRENT=$(grep CURRENT_COLOR $STATE_FILE | cut -d= -f2)
+            else
+              CURRENT="green"
+            fi
+            if [ "$CURRENT" = "blue" ]; then
+              echo "TARGET=green" > /tmp/bg_vars
+              echo "PORT=3002" >> /tmp/bg_vars
+            else
+              echo "TARGET=blue" > /tmp/bg_vars
+              echo "PORT=3001" >> /tmp/bg_vars
+            fi
+            cat /tmp/bg_vars
+
+      - name: Copiar archivos al servidor
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          source: "scripts/deploy-bg.sh,docker-compose.blue.yml,docker-compose.green.yml,nginx/nginx.template.conf"
+          target: "$HOME/app/"
+
+      - name: Ejecutar despliegue
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            source /tmp/bg_vars
+            export TARGET_COLOR=$TARGET
+            export ACTIVE_PORT=$PORT
+            export IMAGE_TAG=${{ needs.build-and-push.outputs.image_tag }}
+            export IMAGE_NAME=${{ github.repository }}
+
+            sudo mkdir -p /etc/nginx/templates
+            sudo cp $HOME/app/nginx/nginx.template.conf /etc/nginx/templates/
+
+            chmod +x $HOME/app/scripts/deploy-bg.sh
+            bash $HOME/app/scripts/deploy-bg.sh
+
+      - name: Verificar despliegue
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            echo "==> Estado actual:"
+            cat $HOME/app/current_deploy.env
+            echo "==> Contenedores:"
+            docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+            curl -sf http://localhost/health && echo "OK produccion activa"

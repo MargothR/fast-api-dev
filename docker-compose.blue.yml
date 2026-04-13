@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  app-blue:
+    image: ghcr.io/${IMAGE_NAME}:${IMAGE_TAG}
+    container_name: app-blue
+    ports:
+      - "3001:3000"
+    restart: unless-stopped
