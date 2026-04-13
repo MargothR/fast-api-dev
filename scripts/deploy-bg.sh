@@ -10,7 +10,7 @@ docker pull ghcr.io/${IMAGE_NAME}:${IMAGE_TAG}
 
 cd $PROJECT_DIR
 export IMAGE_TAG=$IMAGE_TAG
-export IMAGE_NAME=$IMAGE_NAME
+export IMAGE_NAME=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
 
 docker compose -f docker-compose.${TARGET_COLOR}.yml up -d --force-recreate
 
