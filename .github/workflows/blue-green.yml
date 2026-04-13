@@ -2,7 +2,7 @@ name: Blue-Green CI/CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [master]
 
 env:
   IMAGE_NAME: ${{ github.repository }}
