@@ -17,7 +17,7 @@ docker compose -f docker-compose.${TARGET_COLOR}.yml up -d --force-recreate
 
 echo "==> Esperando que el servicio responda..."
 for i in {1..15}; do
-    if curl -sf http://localhost:${ACTIVE_PORT}/health > /dev/null; then
+    if curl -sf http://localhost:${ACTIVE_PORT}/ > /dev/null; then
         echo "==> Servicio listo!"
         break
     fi
