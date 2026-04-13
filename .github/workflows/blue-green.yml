@@ -46,9 +46,9 @@ jobs:
         id: target
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             STATE_FILE="$HOME/app/current_deploy.env"
             if [ -f "$STATE_FILE" ]; then
@@ -68,18 +68,18 @@ jobs:
       - name: Copiar archivos al servidor
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "scripts/deploy-bg.sh,docker-compose.blue.yml,docker-compose.green.yml,nginx/nginx.template.conf"
           target: "$HOME/app/"
 
       - name: Ejecutar despliegue
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             source /tmp/bg_vars
             export TARGET_COLOR=$TARGET
@@ -96,9 +96,9 @@ jobs:
       - name: Verificar despliegue
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             echo "==> Estado actual:"
             cat $HOME/app/current_deploy.env
