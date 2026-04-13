@@ -13,7 +13,7 @@ docker pull ghcr.io/${IMAGE_NAME}:${IMAGE_TAG}
 
 cd $PROJECT_DIR
 
-docker compose -f docker-compose.${TARGET_COLOR}.yml up -d --force-recreate
+docker-compose -f docker-compose.${TARGET_COLOR}.yml up -d --force-recreate
 
 echo "==> Esperando que el servicio responda..."
 for i in {1..15}; do
@@ -34,6 +34,6 @@ echo "CURRENT_COLOR=${TARGET_COLOR}" > $STATE_FILE
 echo "==> Estado guardado: $TARGET_COLOR es ahora PRODUCTIVO"
 
 OLD_COLOR=$( [ "$TARGET_COLOR" = "blue" ] && echo "green" || echo "blue" )
-docker compose -f docker-compose.${OLD_COLOR}.yml down || true
+docker-compose -f docker-compose.${OLD_COLOR}.yml down || true
 
 echo "==> Pipeline Blue-Green completado!"
